@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Bachelor Party - Bedrooms</title>
     <link rel="stylesheet" href="styles.css" />
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore.js"></script>
   </head>
   <body>
     <div class="slideshow">
@@ -28,12 +31,12 @@
 
     <!-- Bedrooms -->
     <section id="bedrooms">
-      <h2>There are 2 houses, 10 beds and 8 bedrooms; take your pick!</h2>
+      <h2>There are 10 beds and 8 bedrooms; take your pick!</h2>
 
       <h3>House 1</h3>
       <div class="house-grid">
         <div class="bedroom">
-          <img src="images/house1-bedroom3.jpg" alt="House 1 Bedroom 1" />
+          <img src="images/house1-bedroom1.jpg" alt="House 1 Bedroom 1" />
           <p>Bedroom 1: Loft space with twin bed</p>
           <div class="bed-option" data-id="house1-bedroom1-twin">
             <p>Twin Bed</p>
@@ -55,7 +58,7 @@
         </div>
 
         <div class="bedroom">
-          <img src="images/house1-bedroom1.jpg" alt="House 1 Bedroom 3" />
+          <img src="images/house1-bedroom3.jpg" alt="House 1 Bedroom 3" />
           <p>Bedroom 3: Queen bed with high ceilings and views</p>
           <div class="bed-option" data-id="house1-bedroom3-queen">
             <p>Queen Bed</p>
@@ -116,7 +119,7 @@
         </div>
       </div>
     </section>
-
+    </div>
     <script src="script.js"></script>
   </body>
 </html>
