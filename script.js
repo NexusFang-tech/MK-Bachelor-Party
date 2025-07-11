@@ -93,6 +93,12 @@ function claimBed(button) {
 function unclaimBed(id, type) {
     if (confirm('Are you sure you want to unclaim this bed?')) {
         db.collection('claims').doc(id).delete();
+        // Immediate UI update for unclaim
+        var optionDiv = document.querySelector('[data-id="' + id + '"]');
+        if (optionDiv) {
+            optionDiv.classList.remove('claimed');
+            optionDiv.innerHTML = '<p>' + type + '</p><button onclick="claimBed(this)">Claim</button>';
+        }
     }
 }
 
