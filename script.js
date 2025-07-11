@@ -1,7 +1,7 @@
-// script.js - Fixed version with all features restored, Firebase sync, and removal
+// script.js - Full fixed version with Firebase, all features restored, sync, and removal
 
-// Firebase Config
-const firebaseConfig = {
+// Firebase Config (your values, initialized globally)
+var firebaseConfig = {
   apiKey: "AIzaSyBGJUmD9rYtKNnUKGXasJRs57UyrHVq-6Q",
   authDomain: "bachelor-party-mk.firebaseapp.com",
   projectId: "bachelor-party-mk",
@@ -12,40 +12,48 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-const app = firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
+firebase.initializeApp(firebaseConfig);
+var db = firebase.firestore();
 
 // Load data on page load
 window.onload = function() {
-    if (document.querySelector('#bedrooms')) loadClaims();
+    if (document.querySelector('#bedrooms')) {
+        loadClaims();
+    }
     if (document.querySelector('#activities')) {
         loadVotes('brewery', 'vote-results', 'brewery-vote-list');
         loadVotes('golf', 'golf-vote-results', 'golf-vote-list');
         loadVotes('other', 'other-vote-results', 'other-vote-list');
         loadList('otherActivities', 'activity-list');
         loadList('golf', 'golf-list');
-        initMap(); // Always call if on activities page
+        if (document.getElementById('map')) {
+            initMap();
+        }
     }
     if (document.querySelector('#shopping')) {
         loadList('shopping', 'shopping-list');
         loadCigars();
     }
-    updateCountdown();
-    setInterval(updateCountdown, 1000);
+    if (document.getElementById('countdown-timer')) {
+        updateCountdown();
+        setInterval(updateCountdown, 1000);
+    }
 };
 
 // Helper: Load and listen to list collections with delete
 function loadList(collectionName, listId) {
-    const list = document.getElementById(listId);
+    var list = document.getElementById(listId);
     if (!list) return;
     db.collection(collectionName).orderBy('timestamp', 'asc').onSnapshot(snapshot => {
         list.innerHTML = '';
         snapshot.forEach(doc => {
-            const li = document.createElement('li');
+            var li = document.createElement('li');
             li.textContent = doc.data().item;
-            const delBtn = document.createElement('button');
+            var delBtn = document.createElement('button');
             delBtn.textContent = 'Delete';
-            delBtn.onclick = () => db.collection(collectionName).doc(doc.id).delete();
+            delBtn.onclick = function() {
+                db.collection(collectionName).doc(doc.id).delete();
+            };
             li.appendChild(delBtn);
             list.appendChild(li);
         });
@@ -54,7 +62,7 @@ function loadList(collectionName, listId) {
 
 // Helper: Add to list
 function addToList(collectionName, inputId) {
-    const input = document.getElementById(inputId);
+    var input = document.getElementById(inputId);
     if (input.value) {
         db.collection(collectionName).add({
             item: input.value,
@@ -66,36 +74,28 @@ function addToList(collectionName, inputId) {
 
 // Bedroom Claims
 function claimBed(button) {
-    const optionDiv = button.parentElement;
-    const id = optionDiv.getAttribute('data-id');
-    const name = prompt('Enter your name to claim this bed:');
+    var optionDiv = button.parentElement;
+    var id = optionDiv.getAttribute('data-id');
+    var name = prompt('Enter your name to claim this bed:');
     if (name) {
-        // Immediate UI update
         optionDiv.classList.add('claimed');
-        optionDiv.innerHTML = `<p>Claimed by ${name}</p><button onclick="unclaimBed('${id}')">Unclaim</button>`;
-        
-        // Save to Firestore
-        db.collection('claims').doc(id).set({ name }).catch(error => {
-            alert('Error claiming: ' + error.message);
-            // Revert UI if error
-            optionDiv.classList.remove('claimed');
-            optionDiv.innerHTML = `<p>Twin Bed</p><button onclick="claimBed(this)">Claim</button>`; // Adjust for bed type
-        });
+        optionDiv.innerHTML = '<p>Claimed by ' + name + '</p><button onclick="unclaimBed(\'' + id + '\')">Unclaim</button>';
+        db.collection('claims').doc(id).set({ name: name });
     }
 }
 
 function loadClaims() {
     db.collection('claims').onSnapshot(snapshot => {
         document.querySelectorAll('.bed-option').forEach(optionDiv => {
-            const id = optionDiv.getAttribute('data-id');
-            const doc = snapshot.docs.find(d => d.id === id);
+            var id = optionDiv.getAttribute('data-id');
+            var doc = snapshot.docs.find(d => d.id === id);
             if (doc) {
-                const name = doc.data().name;
+                var name = doc.data().name;
                 optionDiv.classList.add('claimed');
-                optionDiv.innerHTML = `<p>Claimed by ${name}</p><button onclick="unclaimBed('${id}')">Unclaim</button>`;
+                optionDiv.innerHTML = '<p>Claimed by ' + name + '</p><button onclick="unclaimBed(\'' + id + '\')">Unclaim</button>';
             } else {
                 optionDiv.classList.remove('claimed');
-                optionDiv.innerHTML = '<p>Twin Bed</p><button onclick="claimBed(this)">Claim</button>'; // Customize per bed
+                optionDiv.innerHTML = '<p>Twin Bed</p><button onclick="claimBed(this)">Claim</button>'; // Customize for each bed type
             }
         });
     });
@@ -109,12 +109,12 @@ function unclaimBed(id) {
 
 // Votes (general with delete/undo)
 function submitVotes(type, formId) {
-    const form = document.getElementById(formId);
-    const selected = Array.from(form.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value);
+    var form = document.getElementById(formId);
+    var selected = Array.from(form.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value);
     
     if (selected.length > 0) {
         selected.forEach(item => {
-            db.collection(`${type}Votes`).doc(item).set({
+            db.collection(type + 'Votes').doc(item).set({
                 count: firebase.firestore.FieldValue.increment(1)
             }, { merge: true });
         });
@@ -123,8 +123,8 @@ function submitVotes(type, formId) {
 }
 
 function loadVotes(type, resultsId, listId) {
-    db.collection(`${type}Votes`).onSnapshot(snapshot => {
-        const votes = {};
+    db.collection(type + 'Votes').onSnapshot(snapshot => {
+        var votes = {};
         snapshot.forEach(doc => {
             votes[doc.id] = doc.data().count || 0;
         });
@@ -133,17 +133,19 @@ function loadVotes(type, resultsId, listId) {
 }
 
 function displayVotes(type, listId, votes) {
-    const list = document.getElementById(listId);
+    var list = document.getElementById(listId);
     if (!list) return;
     list.innerHTML = '';
     Object.keys(votes).sort((a,b) => votes[b] - votes[a]).forEach(key => {
-        const li = document.createElement('li');
-        li.textContent = `${key}: ${votes[key]} votes`;
-        const delBtn = document.createElement('button');
+        var li = document.createElement('li');
+        li.textContent = key + ': ' + votes[key] + ' votes';
+        var delBtn = document.createElement('button');
         delBtn.textContent = 'Remove Vote';
-        delBtn.onclick = () => db.collection(`${type}Votes`).doc(key).update({
-            count: firebase.firestore.FieldValue.increment(-1)
-        });
+        delBtn.onclick = function() {
+            db.collection(type + 'Votes').doc(key).update({
+                count: firebase.firestore.FieldValue.increment(-1)
+            });
+        };
         li.appendChild(delBtn);
         list.appendChild(li);
     });
@@ -151,17 +153,17 @@ function displayVotes(type, listId, votes) {
 
 // Cigars Preference
 function submitCigars() {
-    const form = document.getElementById('cigars-form');
-    const choice = form.querySelector('input[name="cigars"]:checked').value;
-    const name = document.getElementById('cigars-name').value.trim();
-    let count = '';
+    var form = document.getElementById('cigars-form');
+    var choice = form.querySelector('input[name="cigars"]:checked').value;
+    var name = document.getElementById('cigars-name').value.trim();
+    var count = '';
     
     if (choice === 'yes') {
         count = document.getElementById('cigars-count').value;
     }
     
     if (name) {
-        db.collection('cigars').doc(name).set({ choice, count });
+        db.collection('cigars').doc(name).set({ choice: choice, count: count });
         form.reset();
         document.getElementById('cigars-count').disabled = true;
     } else {
@@ -171,16 +173,18 @@ function submitCigars() {
 
 function loadCigars() {
     db.collection('cigars').onSnapshot(snapshot => {
-        const list = document.getElementById('cigars-list');
+        var list = document.getElementById('cigars-list');
         if (!list) return;
         list.innerHTML = '';
         snapshot.forEach(doc => {
-            const pref = doc.data();
-            const li = document.createElement('li');
-            li.textContent = `${doc.id}: ${pref.choice === 'yes' ? `Yes, ${pref.count} cigars` : 'No thanks'}`;
-            const delBtn = document.createElement('button');
+            var pref = doc.data();
+            var li = document.createElement('li');
+            li.textContent = doc.id + ': ' + (pref.choice === 'yes' ? 'Yes, ' + pref.count + ' cigars' : 'No thanks');
+            var delBtn = document.createElement('button');
             delBtn.textContent = 'Delete';
-            delBtn.onclick = () => db.collection('cigars').doc(doc.id).delete();
+            delBtn.onclick = function() {
+                db.collection('cigars').doc(doc.id).delete();
+            };
             li.appendChild(delBtn);
             list.appendChild(li);
         });
@@ -188,11 +192,11 @@ function loadCigars() {
 }
 
 // Add event listener for cigars radio
-document.addEventListener('DOMContentLoaded', () => {
-    const yesRadio = document.querySelector('input[value="yes"]');
-    const countSelect = document.getElementById('cigars-count');
+document.addEventListener('DOMContentLoaded', function() {
+    var yesRadio = document.querySelector('input[value="yes"]');
+    var countSelect = document.getElementById('cigars-count');
     if (yesRadio && countSelect) {
-        yesRadio.addEventListener('change', () => {
+        yesRadio.addEventListener('change', function() {
             countSelect.disabled = !yesRadio.checked;
         });
     }
@@ -200,17 +204,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Countdown Timer
 function updateCountdown() {
-    const targetDate = new Date('2025-09-12T00:00:00'); // Start of the trip
-    const now = new Date();
-    const diff = targetDate - now;
-    const timer = document.getElementById('countdown-timer');
+    var targetDate = new Date('2025-09-12T00:00:00'); // Start of the trip
+    var now = new Date();
+    var diff = targetDate - now;
+    var timer = document.getElementById('countdown-timer');
     if (timer) {
         if (diff > 0) {
-            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-            timer.textContent = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+            var days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            var hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            var minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            var seconds = Math.floor((diff % (1000 * 60)) / 1000);
+            timer.textContent = days + 'd ' + hours + 'h ' + minutes + 'm ' + seconds + 's';
         } else {
             timer.textContent = 'Party Time!';
         }
@@ -219,16 +223,14 @@ function updateCountdown() {
 
 // Interactive Map
 function initMap() {
-    const mapDiv = document.getElementById('map');
-    if (!mapDiv) return;
-    const map = L.map('map').setView([35.5956, -82.5519], 15); // Center on downtown Asheville
+    var map = L.map('map').setView([35.5956, -82.5519], 15); // Center on downtown Asheville
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap contributors'
     }).addTo(map);
 
     // Brewery locations (approx lat/long from maps)
-    const breweries = [
+    var breweries = [
         { name: 'Wicked Weed Brewing', lat: 35.5933, lng: -82.5506 },
         { name: 'Hi-Wire Brewing', lat: 35.5905, lng: -82.5538 },
         { name: 'Burial Beer Co.', lat: 35.5896, lng: -82.5552 },
@@ -241,7 +243,7 @@ function initMap() {
         { name: 'Highland Brewing Downtown', lat: 35.5951, lng: -82.5520 }
     ];
 
-    breweries.forEach(brew => {
+    breweries.forEach(function(brew) {
         L.marker([brew.lat, brew.lng]).addTo(map)
             .bindPopup(brew.name);
     });
@@ -253,22 +255,22 @@ function initMap() {
 
 // Plan Route
 function planRoute() {
-    db.collection('breweryVotes').get().then(snapshot => {
-        const votes = {};
-        snapshot.forEach(doc => {
+    db.collection('breweryVotes').get().then(function(snapshot) {
+        var votes = {};
+        snapshot.forEach(function(doc) {
             votes[doc.id] = doc.data().count || 0;
         });
-        const selected = Object.keys(votes).sort((a,b) => votes[b] - votes[a]); // Sort by votes descending
+        var selected = Object.keys(votes).sort(function(a,b) { return votes[b] - votes[a]; }); // Sort by votes descending
         if (selected.length === 0) return alert('No votes yet!');
 
         // Approx order from parking (manual sort for walking route)
-        const order = ['One World Brewing', 'Thirsty Monk Brewery', 'Highland Brewing Downtown', 'Wicked Weed Brewing', 'Asheville Brewing Company', 'Hi-Wire Brewing', 'Green Man Brewery', 'Twin Leaf Brewery', 'Burial Beer Co.', 'Catawba Brewing Company'];
-        const sortedSelected = order.filter(name => selected.includes(name));
+        var order = ['One World Brewing', 'Thirsty Monk Brewery', 'Highland Brewing Downtown', 'Wicked Weed Brewing', 'Asheville Brewing Company', 'Hi-Wire Brewing', 'Green Man Brewery', 'Twin Leaf Brewery', 'Burial Beer Co.', 'Catawba Brewing Company'];
+        var sortedSelected = order.filter(function(name) { return selected.includes(name); });
 
         // Google Maps link (start/end at parking, waypoints for breweries)
-        const parking = 'Pack+Square+Garage,Asheville,NC';
-        const waypoints = sortedSelected.map(name => encodeURIComponent(name + ',Asheville,NC')).join('|');
-        const url = `https://www.google.com/maps/dir/?api=1&origin=${parking}&destination=${parking}&waypoints=${waypoints}&travelmode=walking`;
+        var parking = 'Pack+Square+Garage,Asheville,NC';
+        var waypoints = sortedSelected.map(function(name) { return encodeURIComponent(name + ',Asheville,NC'); }).join('|');
+        var url = 'https://www.google.com/maps/dir/?api=1&origin=' + parking + '&destination=' + parking + '&waypoints=' + waypoints + '&travelmode=walking';
         window.open(url, '_blank');
     });
 }
