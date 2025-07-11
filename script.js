@@ -1,4 +1,4 @@
-// script.js - Fixed with Firebase sync, removal, and all features restored
+// script.js - Fixed version with all features restored, Firebase sync, and removal
 
 // Firebase Config
 const firebaseConfig = {
@@ -12,30 +12,26 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-firebase.initializeApp(firebaseConfig);
+const app = firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
 // Load data on page load
 window.onload = function() {
-    if (document.querySelector('#bedrooms')) {
-        loadClaims();
-    }
+    if (document.querySelector('#bedrooms')) loadClaims();
     if (document.querySelector('#activities')) {
         loadVotes('brewery', 'vote-results', 'brewery-vote-list');
         loadVotes('golf', 'golf-vote-results', 'golf-vote-list');
         loadVotes('other', 'other-vote-results', 'other-vote-list');
         loadList('otherActivities', 'activity-list');
         loadList('golf', 'golf-list');
-        if (document.getElementById('map')) initMap();
+        initMap(); // Always call if on activities page
     }
     if (document.querySelector('#shopping')) {
         loadList('shopping', 'shopping-list');
         loadCigars();
     }
-    if (document.getElementById('countdown-timer')) {
-        updateCountdown();
-        setInterval(updateCountdown, 1000);
-    }
+    updateCountdown();
+    setInterval(updateCountdown, 1000);
 };
 
 // Helper: Load and listen to list collections with delete
@@ -74,10 +70,16 @@ function claimBed(button) {
     const id = optionDiv.getAttribute('data-id');
     const name = prompt('Enter your name to claim this bed:');
     if (name) {
-        db.collection('claims').doc(id).set({ name }).then(() => {
-            // Immediate UI update
-            optionDiv.classList.add('claimed');
-            optionDiv.innerHTML = `<p>Claimed by ${name}</p><button onclick="unclaimBed('${id}')">Unclaim</button>`;
+        // Immediate UI update
+        optionDiv.classList.add('claimed');
+        optionDiv.innerHTML = `<p>Claimed by ${name}</p><button onclick="unclaimBed('${id}')">Unclaim</button>`;
+        
+        // Save to Firestore
+        db.collection('claims').doc(id).set({ name }).catch(error => {
+            alert('Error claiming: ' + error.message);
+            // Revert UI if error
+            optionDiv.classList.remove('claimed');
+            optionDiv.innerHTML = `<p>Twin Bed</p><button onclick="claimBed(this)">Claim</button>`; // Adjust for bed type
         });
     }
 }
@@ -92,7 +94,6 @@ function loadClaims() {
                 optionDiv.classList.add('claimed');
                 optionDiv.innerHTML = `<p>Claimed by ${name}</p><button onclick="unclaimBed('${id}')">Unclaim</button>`;
             } else {
-                // Reset to unclaimed state (adjust <p> based on actual bed type)
                 optionDiv.classList.remove('claimed');
                 optionDiv.innerHTML = '<p>Twin Bed</p><button onclick="claimBed(this)">Claim</button>'; // Customize per bed
             }
@@ -148,7 +149,7 @@ function displayVotes(type, listId, votes) {
     });
 }
 
-// Cigars Preference (with delete)
+// Cigars Preference
 function submitCigars() {
     const form = document.getElementById('cigars-form');
     const choice = form.querySelector('input[name="cigars"]:checked').value;
@@ -216,8 +217,10 @@ function updateCountdown() {
     }
 }
 
-// Interactive Map (restored)
+// Interactive Map
 function initMap() {
+    const mapDiv = document.getElementById('map');
+    if (!mapDiv) return;
     const map = L.map('map').setView([35.5956, -82.5519], 15); // Center on downtown Asheville
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -248,7 +251,7 @@ function initMap() {
         .bindPopup('Pack Square Parking Garage (Start/End Point)');
 }
 
-// Plan Route (restored, using Firebase get)
+// Plan Route
 function planRoute() {
     db.collection('breweryVotes').get().then(snapshot => {
         const votes = {};
