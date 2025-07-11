@@ -1,0 +1,299 @@
+/* styles.css - Full code */
+
+body {
+  font-family: Arial, sans-serif;
+  margin: 20px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+section {
+  margin-bottom: 40px;
+}
+
+.bedroom {
+  border: 1px solid #ddd;
+  padding: 15px;
+  margin-bottom: 20px;
+  max-width: 400px;
+}
+
+.bedroom img {
+  width: 100%;
+  height: auto;
+  margin-bottom: 10px;
+}
+
+.bed-option {
+  margin-top: 10px;
+  padding: 10px;
+  border-top: 1px solid #eee;
+}
+
+.bed-option.claimed {
+  background-color: #f8d7da; /* Light red for claimed */
+}
+
+.bed-option.claimed button {
+  display: none; /* Hide button after claim */
+}
+
+.bed-option p {
+  margin: 0;
+}
+
+.house-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* 2 columns, equal width */
+  gap: 20px; /* Space between grid items */
+  margin-bottom: 40px; /* Space below each house grid */
+}
+
+ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+button {
+  margin-top: 10px;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+form label {
+  display: block;
+  margin-bottom: 10px;
+}
+
+#map {
+  border: 1px solid #ddd;
+}
+
+#vote-results {
+  margin-top: 20px;
+}
+
+#vote-results ul {
+  padding-left: 20px;
+}
+
+nav ul {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  justify-content: space-around;
+  background: #f0f0f0;
+  margin: 0 0 20px;
+}
+
+nav a {
+  text-decoration: none;
+  color: #333;
+  padding: 10px;
+}
+
+#countdown-timer {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.guys-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+.guy {
+  text-align: center;
+  border: 1px solid #ddd;
+  padding: 10px;
+}
+
+.guy img {
+  width: 200px;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .house-grid {
+    grid-template-columns: 1fr; /* 1 column for small screens */
+  }
+}
+
+@media (max-width: 600px) {
+  .bedroom {
+    display: block;
+    margin: 10px auto;
+  }
+}
+
+.golf-grid {
+  margin-bottom: 20px;
+}
+
+.golf-course {
+  border: 1px solid #ddd;
+  padding: 15px;
+  text-align: center;
+}
+
+.golf-course img {
+  width: 100%;
+  height: auto;
+  margin-bottom: 10px;
+}
+
+.golf-course h3 {
+  margin: 10px 0 5px;
+}
+
+.golf-course p {
+  margin: 5px 0;
+}
+
+#golf-vote-results {
+  margin-top: 20px;
+}
+
+#golf-vote-results ul {
+  padding-left: 20px;
+}
+
+#directions ul {
+  padding-left: 20px;
+  list-style-type: disc;
+}
+
+#directions strong {
+  color: #d00; /* Red for warnings */
+}
+
+#cigars-form label {
+  display: inline-block;
+  margin-right: 10px;
+}
+
+#cigars-results ul {
+  padding-left: 20px;
+}
+
+.slideshow {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1; /* Behind content */
+  overflow: hidden;
+}
+
+.slide {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  opacity: 0;
+  animation: fade 40s infinite; /* Adjust time for cycle speed (4 slides * 10s) */
+}
+
+.slide:nth-child(1) {
+  animation-delay: 0s;
+}
+.slide:nth-child(2) {
+  animation-delay: 10s;
+}
+.slide:nth-child(3) {
+  animation-delay: 20s;
+}
+.slide:nth-child(4) {
+  animation-delay: 30s;
+}
+
+@keyframes fade {
+  0% {
+    opacity: 0;
+  }
+  5% {
+    opacity: 1;
+  }
+  25% {
+    opacity: 1;
+  }
+  30% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.content {
+  position: relative;
+  z-index: 1;
+  background: rgba(
+    255,
+    255,
+    255,
+    0.8
+  ); /* Semi-transparent white overlay for readability */
+  padding: 20px;
+  border-radius: 10px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+h1,
+h2,
+h3 {
+  text-align: center;
+}
+
+#countdown,
+#itinerary,
+#meet-guys,
+#directions {
+  text-align: center;
+}
+
+#itinerary ul,
+#directions ul {
+  display: inline-block;
+  text-align: left; /* Keeps lists left-aligned but centered on page */
+  max-width: 600px;
+}
+
+.guy {
+  margin: 0 auto; /* Centers guy cards */
+}
+
+#countdown-timer.synthwave {
+  font-family: "Press Start 2P", cursive;
+  font-size: 28px;
+  color: #ff00ff; /* Neon pink */
+  text-shadow: 0 0 10px #ff00ff, 0 0 20px #00ffff; /* Glow effect */
+  background: linear-gradient(
+    45deg,
+    #0f0c29,
+    #302b63,
+    #24243e
+  ); /* Synthwave gradient */
+  padding: 20px;
+  border-radius: 10px;
+  display: inline-block;
+  animation: glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes glow {
+  from {
+    text-shadow: 0 0 5px #ff00ff, 0 0 10px #00ffff;
+  }
+  to {
+    text-shadow: 0 0 15px #ff00ff, 0 0 25px #00ffff;
+  }
+}

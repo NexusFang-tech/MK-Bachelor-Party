@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bachelor Party - Shopping</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="slideshow">
+        <!-- Add your image paths here; same on all pages for consistency -->
+        <div class="slide" style="background-image: url('images/background1.jpg');"></div>
+        <div class="slide" style="background-image: url('images/background2.jpg');"></div>
+        <div class="slide" style="background-image: url('images/background3.jpg');"></div>
+        <div class="slide" style="background-image: url('images/background4.jpg');"></div>
+        <!-- Add more if wanted -->
+    </div>
+    <div class="content">
+        <nav>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="bedrooms.html">Bedrooms</a></li>
+                <li><a href="activities.html">Activities</a></li>
+                <li><a href="shopping.html">Shopping</a></li>
+                <li><a href="contribute.html">Contribute</a></li>
+            </ul>
+        </nav>
+
+    <!-- Shopping List -->
+    <section id="shopping">
+      <h2>Shopping List</h2>
+      <p>
+        Add any items you'd like to have at the party, such as specific types of
+        beer or liquor, soda, snacks, meats for grilling, or note dietary
+        restrictions (e.g., "Gluten-free snacks for me"). We'll compile and shop
+        accordingly!
+      </p>
+
+      <ul id="shopping-list">
+        <!-- Pre-populated items; more added dynamically -->
+      </ul>
+      <input
+        type="text"
+        id="new-item"
+        placeholder="Add item (e.g., IPA beer, Ribeye steaks)"
+      />
+      <button onclick="addItem()">Add</button>
+
+      <!-- Cigars Preference -->
+      <h3>Cigars Preference</h3>
+      <p>
+        Let us know if you'll be enjoying cigars with the group and how many
+        you'd like (1 or 2).
+      </p>
+      <form id="cigars-form">
+        <label>
+          <input type="radio" name="cigars" value="no" checked /> No thanks </label
+        ><br />
+        <label>
+          <input type="radio" name="cigars" value="yes" /> Yes, I'd like
+          <select id="cigars-count" disabled>
+            <option value="1">1</option>
+            <option value="2">2</option>
+          </select> </label
+        ><br />
+        <input type="text" id="cigars-name" placeholder="Your name" required />
+        <button type="button" onclick="submitCigars()">Submit</button>
+      </form>
+      <div id="cigars-results">
+        <h4>Current Preferences:</h4>
+        <ul id="cigars-list"></ul>
+      </div>
+    </section>
+
+    <script src="script.js"></script>
+  </body>
+</html>
