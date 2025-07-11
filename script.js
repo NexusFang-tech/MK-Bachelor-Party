@@ -78,6 +78,7 @@ function addToList(collectionName, inputId) {
 }
 
 // Bedroom Claims
+// Bedroom Claims
 function claimBed(button) {
     var optionDiv = button.parentElement;
     var id = optionDiv.getAttribute('data-id');
@@ -86,11 +87,38 @@ function claimBed(button) {
     if (name) {
         // Immediate UI update
         optionDiv.classList.add('claimed');
-        optionDiv.innerHTML = '<p>Claimed by ' + name + '</p><button onclick="unclaimBed(\'' + id + '\', \'' + type + '\')">Unclaim</button>';
+        optionDiv.innerHTML = '<p>Claimed by ' + name + '</p><button onclick="unclaimBed(\'' + id + '\', \'' + type.replace(/\'/g, "\\'") + '\')">Unclaim</button>';
         
         // Save to Firebase
         db.collection('claims').doc(id).set({ name: name });
     }
+}
+
+function unclaimBed(id, type) {
+    if (confirm('Are you sure you want to unclaim this bed?')) {
+        db.collection('claims').doc(id).delete();
+    }
+}
+
+function loadClaims() {
+    db.collection('claims').onSnapshot(function(snapshot) {
+        var claims = {};
+        snapshot.forEach(function(doc) {
+            claims[doc.id] = doc.data().name;
+        });
+        document.querySelectorAll('.bed-option').forEach(function(optionDiv) {
+            var id = optionDiv.getAttribute('data-id');
+            var type = optionDiv.getAttribute('data-type');
+            var name = claims[id];
+            if (name) {
+                optionDiv.classList.add('claimed');
+                optionDiv.innerHTML = '<p>Claimed by ' + name + '</p><button onclick="unclaimBed(\'' + id + '\', \'' + type.replace(/\'/g, "\\'") + '\')">Unclaim</button>';
+            } else {
+                optionDiv.classList.remove('claimed');
+                optionDiv.innerHTML = '<p>' + type + '</p><button onclick="claimBed(this)">Claim</button>';
+            }
+        });
+    });
 }
 
 function unclaimBed(id, type) {
