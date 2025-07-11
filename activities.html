@@ -1,19 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bachelor Party - Activities</title>
-    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="styles.css">
     <!-- Leaflet CSS -->
-    <link
-      rel="stylesheet"
-      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-    />
-    <!-- Leaflet JS (moved to head for earlier loading) -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  </head>
-  <body>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore.js"></script>
+</head>
+<body>
     <div class="slideshow">
         <!-- Add your image paths here; same on all pages for consistency -->
         <div class="slide" style="background-image: url('images/background1.jpg');"></div>
@@ -33,238 +31,109 @@
             </ul>
         </nav>
 
-    <!-- Brewery Suggestions -->
-    <section id="activities">
-      <h2>Brewery Suggestions - Vote on Your Favorites!</h2>
-      <p>
-        Select breweries you'd like to visit (multi-select). Votes help us plan
-        the route!
-      </p>
-      <form id="brewery-form">
-        <label
-          ><input type="checkbox" name="brewery" value="Wicked Weed Brewing" />
-          Wicked Weed Brewing (91 Biltmore Ave)</label
-        ><br />
-        <label
-          ><input type="checkbox" name="brewery" value="Hi-Wire Brewing" />
-          Hi-Wire Brewing (197 Hilliard Ave)</label
-        ><br />
-        <label
-          ><input type="checkbox" name="brewery" value="Burial Beer Co." />
-          Burial Beer Co. (40 Collier Ave)</label
-        ><br />
-        <label
-          ><input type="checkbox" name="brewery" value="Green Man Brewery" />
-          Green Man Brewery (27 Buxton Ave)</label
-        ><br />
-        <label
-          ><input
-            type="checkbox"
-            name="brewery"
-            value="Catawba Brewing Company"
-          />
-          Catawba Brewing Company (32 Banks Ave)</label
-        ><br />
-        <label
-          ><input type="checkbox" name="brewery" value="One World Brewing" />
-          One World Brewing (10 Patton Ave)</label
-        ><br />
-        <label
-          ><input type="checkbox" name="brewery" value="Thirsty Monk Brewery" />
-          Thirsty Monk Brewery (92 Patton Ave)</label
-        ><br />
-        <label
-          ><input
-            type="checkbox"
-            name="brewery"
-            value="Asheville Brewing Company"
-          />
-          Asheville Brewing Company (77 Coxe Ave)</label
-        ><br />
-        <label
-          ><input type="checkbox" name="brewery" value="Twin Leaf Brewery" />
-          Twin Leaf Brewery (144 Coxe Ave)</label
-        ><br />
-        <label
-          ><input
-            type="checkbox"
-            name="brewery"
-            value="Highland Brewing Downtown"
-          />
-          Highland Brewing Downtown (56 Patton Ave)</label
-        ><br />
-        <button type="button" onclick="submitVotes()">Submit Votes</button>
-      </form>
-      <div id="vote-results"></div>
-      <button onclick="planRoute()">Plan Route on Google Maps</button>
+        <!-- Brewery Suggestions -->
+        <section id="activities">
+            <h2>Brewery Suggestions - Vote on Your Favorites!</h2>
+            <p>Select breweries you'd like to visit (multi-select). Votes help us plan the route!</p>
+            <form id="brewery-form">
+                <label><input type="checkbox" name="brewery" value="Wicked Weed Brewing"> Wicked Weed Brewing (91 Biltmore Ave)</label><br>
+                <label><input type="checkbox" name="brewery" value="Hi-Wire Brewing"> Hi-Wire Brewing (197 Hilliard Ave)</label><br>
+                <label><input type="checkbox" name="brewery" value="Burial Beer Co."> Burial Beer Co. (40 Collier Ave)</label><br>
+                <label><input type="checkbox" name="brewery" value="Green Man Brewery"> Green Man Brewery (27 Buxton Ave)</label><br>
+                <label><input type="checkbox" name="brewery" value="Catawba Brewing Company"> Catawba Brewing Company (32 Banks Ave)</label><br>
+                <label><input type="checkbox" name="brewery" value="One World Brewing"> One World Brewing (10 Patton Ave)</label><br>
+                <label><input type="checkbox" name="brewery" value="Thirsty Monk Brewery"> Thirsty Monk Brewery (92 Patton Ave)</label><br>
+                <label><input type="checkbox" name="brewery" value="Asheville Brewing Company"> Asheville Brewing Company (77 Coxe Ave)</label><br>
+                <label><input type="checkbox" name="brewery" value="Twin Leaf Brewery"> Twin Leaf Brewery (144 Coxe Ave)</label><br>
+                <label><input type="checkbox" name="brewery" value="Highland Brewing Downtown"> Highland Brewing Downtown (56 Patton Ave)</label><br>
+                <button type="button" onclick="submitVotes('brewery', 'brewery-form')">Submit Votes</button>
+            </form>
+            <div id="vote-results">
+                <h3>Current Brewery Votes:</h3>
+                <ul id="brewery-vote-list"></ul>
+            </div>
+            <button onclick="planRoute()">Plan Route on Google Maps</button>
 
-      <h3>Interactive Map of Downtown Asheville Breweries</h3>
-      <div id="map" style="height: 400px; margin-top: 20px"></div>
-    </section>
+            <h3>Interactive Map of Downtown Asheville Breweries</h3>
+            <div id="map" style="height: 400px; margin-top: 20px;"></div>
+        </section>
 
-    <!-- Other Activities -->
-    <section id="other-activities">
-      <h2>Other Activities - Vote on Your Favorites!</h2>
-      <p>
-        Select activities you're interested in (multi-select). Votes help us
-        plan! Suggest others below.
-      </p>
-      <form id="other-activities-form">
-        <div class="activities-list">
-          <label
-            ><input type="checkbox" name="activity" value="Axe Throwing" /> Axe
-            Throwing (e.g., Axeville - $25/person for 1 hour, fun group
-            competition)
-            <a href="https://throwaxeville.com/" target="_blank"
-              >Website</a
-            ></label
-          ><br />
-          <label
-            ><input type="checkbox" name="activity" value="Escape Room" />
-            Escape Room (e.g., Fox-N-Otter - $32-49/person, team puzzle-solving)
-            <a href="https://escaperoomsasheville.com/" target="_blank"
-              >Website</a
-            ></label
-          ><br />
-          <label
-            ><input type="checkbox" name="activity" value="Mini Golf" /> Mini
-            Golf (e.g., Tropical Gardens - $12/person, casual outdoor fun)
-            <a href="https://www.minigolftropicalgardens.com/" target="_blank"
-              >Website</a
-            ></label
-          ><br />
-          <label
-            ><input type="checkbox" name="activity" value="Ziplining" />
-            Ziplining (e.g., Asheville Treetops - $85/person for 2 hours,
-            adrenaline rush with views)
-            <a
-              href="https://ashevilletreetopsadventurepark.com/"
-              target="_blank"
-              >Website</a
-            ></label
-          ><br />
-        </div>
-        <button type="button" onclick="submitOtherVotes()">Submit Votes</button>
-      </form>
-      <div id="other-vote-results"></div>
-      <input
-        type="text"
-        id="new-activity"
-        placeholder="Suggest another activity (e.g., Name, Cost, Link)"
-      />
-      <button onclick="addActivity()">Add Suggestion</button>
-      <ul id="activity-list"></ul>
-    </section>
+        <!-- Other Activities -->
+        <section id="other-activities">
+            <h2>Other Activities - Vote on Your Favorites!</h2>
+            <p>Select activities you're interested in (multi-select). Votes help us plan! Suggest others below.</p>
+            <form id="other-activities-form">
+                <div class="activities-list">
+                    <label><input type="checkbox" name="activity" value="Axe Throwing"> Axe Throwing (e.g., Axeville - $25/person for 1 hour, fun group competition) <a href="https://throwaxeville.com/" target="_blank">Website</a></label><br>
+                    <label><input type="checkbox" name="activity" value="Escape Room"> Escape Room (e.g., Fox-N-Otter - $32-49/person, team puzzle-solving) <a href="https://escaperoomsasheville.com/" target="_blank">Website</a></label><br>
+                    <label><input type="checkbox" name="activity" value="Mini Golf"> Mini Golf (e.g., Tropical Gardens - $12/person, casual outdoor fun) <a href="https://www.minigolftropicalgardens.com/" target="_blank">Website</a></label><br>
+                    <label><input type="checkbox" name="activity" value="Ziplining"> Ziplining (e.g., Asheville Treetops - $85/person for 2 hours, adrenaline rush with views) <a href="https://ashevilletreetopsadventurepark.com/" target="_blank">Website</a></label><br>
+                    <label><input type="checkbox" name="activity" value="White Water Rafting"> White Water Rafting (e.g., Blue Heron - $59/person for half day, exciting river adventure) <a href="https://www.blueheronwhitewater.com/" target="_blank">Website</a></label><br>
+                    <label><input type="checkbox" name="activity" value="Paint & Sip"> Paint & Sip (e.g., Monet & Chardonnay - $38/person, creative art session with drinks) <a href="https://www.monetandchardonnay.events/" target="_blank">Website</a></label><br>
+                </div>
+                <button type="button" onclick="submitVotes('other', 'other-activities-form')">Submit Votes</button>
+            </form>
+            <div id="other-vote-results">
+                <h3>Current Other Activity Votes:</h3>
+                <ul id="other-vote-list"></ul>
+            </div>
+            <input type="text" id="new-activity" placeholder="Suggest another activity (e.g., Name, Cost, Link)">
+            <button onclick="addToList('otherActivities', 'new-activity')">Add Suggestion</button>
+            <ul id="activity-list"></ul>
+        </section>
 
-    <!-- Golf Courses -->
-    <section id="golf">
-      <h2>Golf Courses - Vote on Your Favorites!</h2>
-      <p>
-        Select courses you're interested in (multi-select). Votes help us
-        decide!
-      </p>
-      <form id="golf-form">
-        <div class="house-grid golf-grid">
-          <div class="golf-course" data-id="black-mountain">
-            <img
-              src="images/black-mountain-golf.jpg"
-              alt="Black Mountain Golf Course"
-            />
-            <h3>Black Mountain Golf Course</h3>
-            <p>
-              Historic course with mountain views and the longest par 6 in the
-              US.
-            </p>
-            <p>Pricing: Weekend $65 (with cart)</p>
-            <a href="https://www.blackmountaingolf.org/" target="_blank"
-              >Website</a
-            >
-            <label
-              ><input
-                type="checkbox"
-                name="golf-course"
-                value="Black Mountain Golf Course"
-              />
-              Interested</label
-            >
-          </div>
-          <div class="golf-course" data-id="reems-creek">
-            <img
-              src="images/reems-creek-golf.jpg"
-              alt="Reems Creek Golf Club"
-            />
-            <h3>Reems Creek Golf Club</h3>
-            <p>
-              Challenging layout in the Blue Ridge Mountains, rated 4 stars.
-            </p>
-            <p>Pricing: Weekend $90 (cart included)</p>
-            <a href="https://www.reemscreekgolf.com/" target="_blank"
-              >Website</a
-            >
-            <label
-              ><input
-                type="checkbox"
-                name="golf-course"
-                value="Reems Creek Golf Club"
-              />
-              Interested</label
-            >
-          </div>
-          <div class="golf-course" data-id="asheville-municipal">
-            <img
-              src="images/guys/asheville-golf.jpg"
-              alt="Asheville Municipal Golf Course"
-            />
-            <h3>Asheville Municipal Golf Course</h3>
-            <p>Affordable classic with rolling terrain and scenic views.</p>
-            <p>Pricing: Weekend $58 (with cart)</p>
-            <a href="https://www.ashevillegc.com/" target="_blank">Website</a>
-            <label
-              ><input
-                type="checkbox"
-                name="golf-course"
-                value="Asheville Municipal Golf Course"
-              />
-              Interested</label
-            >
-          </div>
-          <div class="golf-course" data-id="broadmoor">
-            <img
-              src="images/broadmoor-links-golf.jpg"
-              alt="Broadmoor Golf Links"
-            />
-            <h3>Broadmoor Golf Links</h3>
-            <p>
-              Scenic public course with mountain views and a unique layout in
-              Fletcher.
-            </p>
-            <p>Pricing: Weekend $71 (with cart)</p>
-            <a href="https://www.broadmoorgolflinks.com/" target="_blank"
-              >Website</a
-            >
-            <label
-              ><input
-                type="checkbox"
-                name="golf-course"
-                value="Broadmoor Golf Links"
-              />
-              Interested</label
-            >
-          </div>
-        </div>
-        <button type="button" onclick="submitGolfVotes()">Submit Votes</button>
-      </form>
-      <div id="golf-vote-results"></div>
-      <input
-        type="text"
-        id="new-golf"
-        placeholder="Suggest another course (e.g., Name, Cost, Link)"
-      />
-      <button onclick="addGolf()">Add Suggestion</button>
-      <ul id="golf-list"></ul>
-      <!-- Keep the original suggestions list -->
-    </section>
+        <!-- Golf Courses -->
+        <section id="golf">
+            <h2>Golf Courses - Vote on Your Favorites!</h2>
+            <p>Select courses you're interested in (multi-select). Votes help us decide! Suggest others below.</p>
+            <form id="golf-form">
+                <div class="house-grid golf-grid">
+                    <div class="golf-course" data-id="black-mountain">
+                        <img src="https://www.blackmountaingolf.org/BMGC_HomeHeader_2.jpg" alt="Black Mountain Golf Course">
+                        <h3>Black Mountain Golf Course</h3>
+                        <p>Historic course with mountain views and the longest par 6 in the US.</p>
+                        <p>Pricing: Weekend $65 (with cart)</p>
+                        <a href="https://www.blackmountaingolf.org/" target="_blank">Website</a>
+                        <label><input type="checkbox" name="golf-course" value="Black Mountain Golf Course"> Interested</label>
+                    </div>
+                    <div class="golf-course" data-id="reems-creek">
+                        <img src="https://www.reemscreekgolf.com/wp-content/uploads/sites/1771/2016/07/Reems-Creek-Golf-Club-Header.jpg" alt="Reems Creek Golf Club">
+                        <h3>Reems Creek Golf Club</h3>
+                        <p>Challenging layout in the Blue Ridge Mountains, rated 4 stars.</p>
+                        <p>Pricing: Weekend $90 (cart included)</p>
+                        <a href="https://www.reemscreekgolf.com/" target="_blank">Website</a>
+                        <label><input type="checkbox" name="golf-course" value="Reems Creek Golf Club"> Interested</label>
+                    </div>
+                    <div class="golf-course" data-id="asheville-municipal">
+                        <img src="https://www.ashevillegc.com/wp-content/uploads/sites/1772/2016/07/Asheville-Municipal-Golf-Course-Header.jpg" alt="Asheville Municipal Golf Course">
+                        <h3>Asheville Municipal Golf Course</h3>
+                        <p>Affordable classic with rolling terrain and scenic views.</p>
+                        <p>Pricing: Weekend $58 (with cart)</p>
+                        <a href="https://www.ashevillegc.com/" target="_blank">Website</a>
+                        <label><input type="checkbox" name="golf-course" value="Asheville Municipal Golf Course"> Interested</label>
+                    </div>
+                    <div class="golf-course" data-id="broadmoor">
+                        <img src="https://www.broadmoorgolflinks.com/wp-content/uploads/sites/1773/2016/07/Broadmoor-Golf-Links-Header.jpg" alt="Broadmoor Golf Links">
+                        <h3>Broadmoor Golf Links</h3>
+                        <p>Scenic public course with mountain views and a unique layout in Fletcher.</p>
+                        <p>Pricing: Weekend $71 (with cart)</p>
+                        <a href="https://www.broadmoorgolflinks.com/" target="_blank">Website</a>
+                        <label><input type="checkbox" name="golf-course" value="Broadmoor Golf Links"> Interested</label>
+                    </div>
+                </div>
+                <button type="button" onclick="submitVotes('golf', 'golf-form')">Submit Votes</button>
+            </form>
+            <div id="golf-vote-results">
+                <h3>Current Golf Votes:</h3>
+                <ul id="golf-vote-list"></ul>
+            </div>
+            <input type="text" id="new-golf" placeholder="Suggest another course (e.g., Name, Cost, Link)">
+            <button onclick="addToList('golf', 'new-golf')">Add Suggestion</button>
+            <ul id="golf-list"></ul>
+        </section>
+    </div>
 
     <script src="script.js"></script>
-  </body>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</body>
 </html>
