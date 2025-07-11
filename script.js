@@ -76,12 +76,42 @@ function addToList(collectionName, inputId) {
 function claimBed(button) {
     var optionDiv = button.parentElement;
     var id = optionDiv.getAttribute('data-id');
+    var type = optionDiv.getAttribute('data-type');
     var name = prompt('Enter your name to claim this bed:');
     if (name) {
+        // Immediate UI update
         optionDiv.classList.add('claimed');
-        optionDiv.innerHTML = '<p>Claimed by ' + name + '</p><button onclick="unclaimBed(\'' + id + '\')">Unclaim</button>';
+        optionDiv.innerHTML = '<p>Claimed by ' + name + '</p><button onclick="unclaimBed(\'' + id + '\', \'' + type + '\')">Unclaim</button>';
+        
+        // Save to Firebase
         db.collection('claims').doc(id).set({ name: name });
     }
+}
+
+function unclaimBed(id, type) {
+    if (confirm('Are you sure you want to unclaim this bed?')) {
+        db.collection('claims').doc(id).delete().then(() => {
+            // UI will update via onSnapshot
+        });
+    }
+}
+
+function loadClaims() {
+    db.collection('claims').onSnapshot(function(snapshot) {
+        document.querySelectorAll('.bed-option').forEach(function(optionDiv) {
+            var id = optionDiv.getAttribute('data-id');
+            var type = optionDiv.getAttribute('data-type');
+            var doc = snapshot.docs.find(function(d) { return d.id === id; });
+            if (doc) {
+                var name = doc.data().name;
+                optionDiv.classList.add('claimed');
+                optionDiv.innerHTML = '<p>Claimed by ' + name + '</p><button onclick="unclaimBed(\'' + id + '\', \'' + type + '\')">Unclaim</button>';
+            } else {
+                optionDiv.classList.remove('claimed');
+                optionDiv.innerHTML = '<p>' + type + '</p><button onclick="claimBed(this)">Claim</button>';
+            }
+        });
+    });
 }
 
 function loadClaims() {
