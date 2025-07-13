@@ -2,13 +2,23 @@
 
 document.addEventListener("DOMContentLoaded", () => {
   initFirebaseListeners();
-  if (document.getElementById("countdown-timer")) {
-  updateCountdown();
-  setInterval(updateCountdown, 1000);
-}
+
+  const countdownEl = document.getElementById("countdown-timer");
+  if (countdownEl) {
+    updateCountdown();
+    setInterval(updateCountdown, 1000);
+  }
 
   if (document.getElementById("map")) initMap();
   if (document.getElementById("cigars-list")) displayCigars();
+
+  const yesRadio = document.querySelector('input[value="yes"]');
+  const countSelect = document.getElementById("cigars-count");
+  if (yesRadio && countSelect) {
+    yesRadio.addEventListener("change", () => {
+      countSelect.disabled = !yesRadio.checked;
+    });
+  }
 });
 
 function initFirebaseListeners() {
@@ -199,21 +209,10 @@ function submitCigars() {
   document.getElementById("cigars-count").disabled = true;
 }
 
-// Toggle cigar count dropdown
-document.addEventListener("DOMContentLoaded", () => {
-  const yesRadio = document.querySelector('input[value="yes"]');
-  const countSelect = document.getElementById("cigars-count");
-  if (yesRadio && countSelect) {
-    yesRadio.addEventListener("change", () => {
-      countSelect.disabled = !yesRadio.checked;
-    });
-  }
-});
-
 // Countdown Timer
 function updateCountdown() {
   const timer = document.getElementById("countdown-timer");
-  if (!timer) return; // Exit if not on countdown page
+  if (!timer) return;
 
   const targetDate = new Date("2025-09-12T10:30:00");
   const now = new Date();
@@ -256,8 +255,7 @@ function initMap() {
 
   L.marker([35.5948, -82.5512], {
     icon: L.icon({
-      iconUrl:
-        "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png",
+      iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png",
       iconSize: [25, 41],
     }),
   })
