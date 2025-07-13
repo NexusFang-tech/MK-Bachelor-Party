@@ -7,8 +7,6 @@ document.addEventListener("DOMContentLoaded", () => {
   setInterval(updateCountdown, 1000);
 }
 
-  setInterval(updateCountdown, 1000);
-
   if (document.getElementById("map")) initMap();
   if (document.getElementById("cigars-list")) displayCigars();
 });
