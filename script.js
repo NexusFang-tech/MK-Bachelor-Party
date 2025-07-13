@@ -1,29 +1,16 @@
-// script.js - Firebase version
+// script.js - Firebase-safe version
 
-// Load saved data on page load
-window.onload = function () {
-  loadClaims();
-  loadVotes();
-  loadShopping();
-  loadGolf();
-  loadGolfVotes();
-  loadOtherActivities();
-  if (document.getElementById("map")) initMap(); // Only init map if on activities page
+document.addEventListener("DOMContentLoaded", () => {
+  initFirebaseListeners();
   updateCountdown();
   setInterval(updateCountdown, 1000);
-};
 
-// Bedroom Claims
-function claimBed(button) {
-  const optionDiv = button.parentElement;
-  const id = optionDiv.getAttribute("data-id");
-  const name = prompt("Enter your name to claim this bed:");
-  if (name) {
-    db.ref("bedClaims/" + id).set(name);
-  }
-}
+  if (document.getElementById("map")) initMap();
+  if (document.getElementById("cigars-list")) displayCigars();
+});
 
-function loadClaims() {
+function initFirebaseListeners() {
+  // Load claims
   db.ref("bedClaims").on("value", (snapshot) => {
     const claims = snapshot.val() || {};
     document.querySelectorAll(".bed-option").forEach((optionDiv) => {
@@ -34,24 +21,8 @@ function loadClaims() {
       }
     });
   });
-}
 
-// Brewery Votes
-function submitVotes() {
-  const form = document.getElementById("brewery-form");
-  const selected = Array.from(
-    form.querySelectorAll('input[type="checkbox"]:checked')
-  ).map((cb) => cb.value);
-
-  selected.forEach((brew) => {
-    const ref = db.ref("breweryVotes/" + brew);
-    ref.transaction((current) => (current || 0) + 1);
-  });
-
-  form.reset();
-}
-
-function loadVotes() {
+  // Brewery votes
   db.ref("breweryVotes").on("value", (snapshot) => {
     const votes = snapshot.val() || {};
     const resultsDiv = document.getElementById("vote-results");
@@ -65,24 +36,8 @@ function loadVotes() {
     html += "</ul>";
     resultsDiv.innerHTML = html;
   });
-}
 
-// Golf Votes
-function submitGolfVotes() {
-  const form = document.getElementById("golf-form");
-  const selected = Array.from(
-    form.querySelectorAll('input[type="checkbox"]:checked')
-  ).map((cb) => cb.value);
-
-  selected.forEach((course) => {
-    const ref = db.ref("golfVotes/" + course);
-    ref.transaction((current) => (current || 0) + 1);
-  });
-
-  form.reset();
-}
-
-function loadGolfVotes() {
+  // Golf votes
   db.ref("golfVotes").on("value", (snapshot) => {
     const votes = snapshot.val() || {};
     const resultsDiv = document.getElementById("golf-vote-results");
@@ -96,24 +51,8 @@ function loadGolfVotes() {
     html += "</ul>";
     resultsDiv.innerHTML = html;
   });
-}
 
-// Other Activities Votes
-function submitOtherVotes() {
-  const form = document.getElementById("other-activities-form");
-  const selected = Array.from(
-    form.querySelectorAll('input[type="checkbox"]:checked')
-  ).map((cb) => cb.value);
-
-  selected.forEach((act) => {
-    const ref = db.ref("otherVotes/" + act);
-    ref.transaction((current) => (current || 0) + 1);
-  });
-
-  form.reset();
-}
-
-function displayOtherVotes() {
+  // Other activity votes
   db.ref("otherVotes").on("value", (snapshot) => {
     const votes = snapshot.val() || {};
     const resultsDiv = document.getElementById("other-vote-results");
@@ -127,22 +66,11 @@ function displayOtherVotes() {
     html += "</ul>";
     resultsDiv.innerHTML = html;
   });
-}
 
-// Other Activities Suggestions
-function addActivity() {
-  const input = document.getElementById("new-activity");
-  if (input && input.value) {
-    const ref = db.ref("otherActivities").push();
-    ref.set(input.value);
-    input.value = "";
-  }
-}
-
-function loadOtherActivities() {
-  const list = document.getElementById("activity-list");
-  if (!list) return;
+  // Other activity suggestions
   db.ref("otherActivities").on("value", (snapshot) => {
+    const list = document.getElementById("activity-list");
+    if (!list) return;
     const items = snapshot.val() || {};
     list.innerHTML = "";
     Object.values(items).forEach((item) => {
@@ -151,23 +79,11 @@ function loadOtherActivities() {
       list.appendChild(li);
     });
   });
-  displayOtherVotes();
-}
 
-// Shopping List
-function addItem() {
-  const input = document.getElementById("new-item");
-  if (input && input.value) {
-    const ref = db.ref("shoppingList").push();
-    ref.set(input.value);
-    input.value = "";
-  }
-}
-
-function loadShopping() {
-  const list = document.getElementById("shopping-list");
-  if (!list) return;
+  // Shopping list
   db.ref("shoppingList").on("value", (snapshot) => {
+    const list = document.getElementById("shopping-list");
+    if (!list) return;
     const items = snapshot.val() || {};
     list.innerHTML = "";
     Object.values(items).forEach((item) => {
@@ -176,33 +92,11 @@ function loadShopping() {
       list.appendChild(li);
     });
   });
-}
 
-// Cigars
-function submitCigars() {
-  const form = document.getElementById("cigars-form");
-  const choice = form.querySelector('input[name="cigars"]:checked').value;
-  const name = document.getElementById("cigars-name").value.trim();
-  let count = "";
-
-  if (choice === "yes") {
-    count = document.getElementById("cigars-count").value;
-  }
-
-  if (name) {
-    const ref = db.ref("cigarsPrefs").push();
-    ref.set({ name, choice, count });
-    form.reset();
-    document.getElementById("cigars-count").disabled = true;
-  } else {
-    alert("Please enter your name!");
-  }
-}
-
-function displayCigars() {
-  const list = document.getElementById("cigars-list");
-  if (!list) return;
+  // Cigars
   db.ref("cigarsPrefs").on("value", (snapshot) => {
+    const list = document.getElementById("cigars-list");
+    if (!list) return;
     const prefs = snapshot.val() || {};
     list.innerHTML = "";
     Object.values(prefs).forEach((pref) => {
@@ -215,7 +109,95 @@ function displayCigars() {
   });
 }
 
-// Enable/disable cigar count on radio change
+// Claim a bed
+function claimBed(button) {
+  const optionDiv = button.parentElement;
+  const id = optionDiv.getAttribute("data-id");
+  const name = prompt("Enter your name to claim this bed:");
+  if (name) {
+    db.ref("bedClaims/" + id).set(name);
+  }
+}
+
+// Vote for breweries
+function submitVotes() {
+  const form = document.getElementById("brewery-form");
+  const selected = Array.from(
+    form.querySelectorAll('input[type="checkbox"]:checked')
+  ).map((cb) => cb.value);
+
+  selected.forEach((brew) => {
+    db.ref("breweryVotes/" + brew).transaction((count) => (count || 0) + 1);
+  });
+
+  form.reset();
+}
+
+// Vote for golf
+function submitGolfVotes() {
+  const form = document.getElementById("golf-form");
+  const selected = Array.from(
+    form.querySelectorAll('input[type="checkbox"]:checked')
+  ).map((cb) => cb.value);
+
+  selected.forEach((course) => {
+    db.ref("golfVotes/" + course).transaction((count) => (count || 0) + 1);
+  });
+
+  form.reset();
+}
+
+// Vote for other activities
+function submitOtherVotes() {
+  const form = document.getElementById("other-activities-form");
+  const selected = Array.from(
+    form.querySelectorAll('input[type="checkbox"]:checked')
+  ).map((cb) => cb.value);
+
+  selected.forEach((act) => {
+    db.ref("otherVotes/" + act).transaction((count) => (count || 0) + 1);
+  });
+
+  form.reset();
+}
+
+// Add other activity suggestion
+function addActivity() {
+  const input = document.getElementById("new-activity");
+  if (input && input.value) {
+    db.ref("otherActivities").push().set(input.value);
+    input.value = "";
+  }
+}
+
+// Add item to shopping list
+function addItem() {
+  const input = document.getElementById("new-item");
+  if (input && input.value) {
+    db.ref("shoppingList").push().set(input.value);
+    input.value = "";
+  }
+}
+
+// Submit cigar preference
+function submitCigars() {
+  const form = document.getElementById("cigars-form");
+  const choice = form.querySelector('input[name="cigars"]:checked').value;
+  const name = document.getElementById("cigars-name").value.trim();
+  const count =
+    choice === "yes"
+      ? document.getElementById("cigars-count").value
+      : "";
+
+  if (!name) return alert("Please enter your name!");
+
+  db.ref("cigarsPrefs").push().set({ name, choice, count });
+
+  form.reset();
+  document.getElementById("cigars-count").disabled = true;
+}
+
+// Toggle cigar count dropdown
 document.addEventListener("DOMContentLoaded", () => {
   const yesRadio = document.querySelector('input[value="yes"]');
   const countSelect = document.getElementById("cigars-count");
@@ -224,13 +206,30 @@ document.addEventListener("DOMContentLoaded", () => {
       countSelect.disabled = !yesRadio.checked;
     });
   }
-  displayCigars();
 });
 
-// Interactive Map
+// Countdown Timer
+function updateCountdown() {
+  const targetDate = new Date("2025-09-12T10:30:00");
+  const now = new Date();
+  const diff = targetDate - now;
+  const timer = document.getElementById("countdown-timer");
+  if (timer) {
+    if (diff > 0) {
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+      timer.textContent = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+    } else {
+      timer.textContent = "Party Time!";
+    }
+  }
+}
+
+// Interactive Brewery Map
 function initMap() {
   const map = L.map("map").setView([35.5956, -82.5519], 15);
-
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     attribution: "© OpenStreetMap contributors",
   }).addTo(map);
@@ -263,14 +262,12 @@ function initMap() {
     .bindPopup("Pack Square Parking Garage (Start/End Point)");
 }
 
-// Plan Route
+// Google Maps Route Planner
 function planRoute() {
   db.ref("breweryVotes").once("value", (snapshot) => {
     const votes = snapshot.val() || {};
     const selected = Object.keys(votes).sort((a, b) => votes[b] - votes[a]);
-
-    if (selected.length === 0)
-      return alert("No votes yet!");
+    if (selected.length === 0) return alert("No votes yet!");
 
     const order = [
       "One World Brewing",
@@ -293,23 +290,4 @@ function planRoute() {
     const url = `https://www.google.com/maps/dir/?api=1&origin=${parking}&destination=${parking}&waypoints=${waypoints}&travelmode=walking`;
     window.open(url, "_blank");
   });
-}
-
-// Countdown Timer
-function updateCountdown() {
-  const targetDate = new Date("2025-09-12T10:30:00");
-  const now = new Date();
-  const diff = targetDate - now;
-  const timer = document.getElementById("countdown-timer");
-  if (timer) {
-    if (diff > 0) {
-      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-      timer.textContent = `${days}d ${hours}h ${minutes}m ${seconds}s`;
-    } else {
-      timer.textContent = "Party Time!";
-    }
-  }
 }
