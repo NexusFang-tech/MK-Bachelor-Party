@@ -2,7 +2,11 @@
 
 document.addEventListener("DOMContentLoaded", () => {
   initFirebaseListeners();
+  if (document.getElementById("countdown-timer")) {
   updateCountdown();
+  setInterval(updateCountdown, 1000);
+}
+
   setInterval(updateCountdown, 1000);
 
   if (document.getElementById("map")) initMap();
@@ -210,20 +214,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // Countdown Timer
 function updateCountdown() {
+  const timer = document.getElementById("countdown-timer");
+  if (!timer) return; // Exit if not on countdown page
+
   const targetDate = new Date("2025-09-12T10:30:00");
   const now = new Date();
   const diff = targetDate - now;
-  const timer = document.getElementById("countdown-timer");
-  if (timer) {
-    if (diff > 0) {
-      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-      timer.textContent = `${days}d ${hours}h ${minutes}m ${seconds}s`;
-    } else {
-      timer.textContent = "Party Time!";
-    }
+
+  if (diff > 0) {
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+    timer.textContent = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+  } else {
+    timer.textContent = "Party Time!";
   }
 }
 
