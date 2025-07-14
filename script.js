@@ -12,7 +12,7 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-// Countdown
+// Countdown timer
 function updateCountdown() {
   const timer = document.getElementById("countdown-timer");
   if (!timer) return;
@@ -34,24 +34,31 @@ function updateCountdown() {
   timer.textContent = `${days}d ${hours}h ${minutes}m ${seconds}s`;
 }
 
-// Claim bed
+// Claim bed handler
 function claimBed(button) {
   const parent = button.closest(".bed-option");
   const id = parent.dataset.id;
   const name = prompt("Enter your name to claim this bed:");
   if (!name) return;
 
-  db.ref("claims/" + id).set(name);
+  // Update Firebase
+  db.ref("claims/" + id).set(name)
+    .then(() => {
+      parent.classList.add("claimed");
+      parent.innerHTML = `<p>Claimed by ${name}</p>`;
+    })
+    .catch((error) => {
+      console.error("Error saving claim:", error);
+      alert("Something went wrong claiming this bed. Please try again.");
+    });
 }
 
-// Load claims from Firebase
+// Load all claims from Firebase
 function loadClaims() {
-  db.ref("claims").on("value", snapshot => {
+  db.ref("claims").on("value", (snapshot) => {
     const claims = snapshot.val() || {};
-
-    document.querySelectorAll(".bed-option").forEach(div => {
+    document.querySelectorAll(".bed-option").forEach((div) => {
       const id = div.dataset.id;
-
       if (claims[id]) {
         div.classList.add("claimed");
         div.innerHTML = `<p>Claimed by ${claims[id]}</p>`;
@@ -60,12 +67,12 @@ function loadClaims() {
   });
 }
 
-// Assign global access for inline onclick
+// Make claimBed available for inline onclick
 window.claimBed = claimBed;
 
-// Initialize features on load
-window.onload = () => {
+// On page load
+window.onload = function () {
   updateCountdown();
   setInterval(updateCountdown, 1000);
-  loadClaims();
+  loadClaims(); // ← This ensures bed claims persist on reload
 };
