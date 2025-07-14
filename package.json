@@ -35,9 +35,4 @@
     "leaflet": "^1.9.4"
   }
 
-  {
-  "rules": {
-    ".read": true,
-    ".write": true
-  }
 }
