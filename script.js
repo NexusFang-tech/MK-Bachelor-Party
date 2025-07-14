@@ -60,6 +60,8 @@ function claimBed(button) {
   db.ref("claims/" + id).set(name);
 }
 
+window.claimBed = claimBed;
+
 function loadClaims() {
   db.ref("claims").on("value", (snap) => {
     const claims = snap.val() || {};
