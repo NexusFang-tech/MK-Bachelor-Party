@@ -1,88 +1,87 @@
-// script.js - Full code
-
-import { initializeApp } from "firebase/app";
-import { getDatabase, ref, onValue, set, get } from "firebase/database";
-
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+// Firebase config and init
 const firebaseConfig = {
   apiKey: "AIzaSyBGJUmD9rYtKNnUKGXasJRs57UyrHVq-6Q",
   authDomain: "bachelor-party-mk.firebaseapp.com",
   projectId: "bachelor-party-mk",
-  storageBucket: "bachelor-party-mk.firebasestorage.app",
+  storageBucket: "bachelor-party-mk.appspot.com",
   messagingSenderId: "588727020923",
   appId: "1:588727020923:web:d742c916c707ee101d21de",
-  measurementId: "G-1BH6QYVDKG"
+  measurementId: "G-1BH6QYVDKG",
+  databaseURL: "https://bachelor-party-mk-default-rtdb.firebaseio.com"
 };
 
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
 
-// Load saved data on page load
+// On window load
 window.onload = function () {
+  updateCountdown();
+  setInterval(updateCountdown, 1000);
+
   loadClaims();
   loadVotes();
   loadShopping();
   loadGolf();
-  if (document.getElementById("map")) initMap(); // Only init map if on activities page
-  updateCountdown();
-  setInterval(updateCountdown, 1000);
   loadGolfVotes();
-  displayCigars(); // Added for cigars
-  loadOtherActivities(); // Loads suggestions and votes
+  displayCigars();
+  loadOtherActivities();
+  if (document.getElementById("map")) initMap();
 };
 
-// Bedroom Claims
-function claimBed(button) {
-  const optionDiv = button.parentElement;
-  const id = optionDiv.getAttribute("data-id");
-  const name = prompt("Enter your name to claim this bed:");
-  if (name) {
-    optionDiv.classList.add("claimed");
-    optionDiv.innerHTML = `<p>Claimed by ${name}</p>`; // Replace content with claimed message
+// Countdown
+function updateCountdown() {
+  const target = new Date("2025-09-12T10:30:00");
+  const now = new Date();
+  const diff = target - now;
+  const timer = document.getElementById("countdown-timer");
+  if (!timer) return;
 
-    // Save to Firebase
-    const claimsRef = ref(db, 'claims');
-    get(claimsRef).then((snapshot) => {
-      let claims = snapshot.val() || {};
-      claims[id] = name;
-      set(claimsRef, claims);
-    }).catch((error) => {
-      console.error("Error saving claim:", error);
-    });
+  if (diff <= 0) {
+    timer.textContent = "Party Time!";
+    return;
   }
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+  const minutes = Math.floor((diff / (1000 * 60)) % 60);
+  const seconds = Math.floor((diff / 1000) % 60);
+  timer.textContent = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+}
+
+// Bedroom Claiming
+function claimBed(button) {
+  const parent = button.closest(".bed-option");
+  const id = parent.dataset.id;
+  const name = prompt("Enter your name to claim this bed:");
+  if (!name) return;
+
+  parent.classList.add("claimed");
+  parent.innerHTML = `<p>Claimed by ${name}</p>`;
+
+  db.ref("claims/" + id).set(name);
 }
 
 function loadClaims() {
-  const claimsRef = ref(db, 'claims');
-  onValue(claimsRef, (snapshot) => {
-    const claims = snapshot.val() || {};
-    document.querySelectorAll(".bed-option").forEach((optionDiv) => {
-      const id = optionDiv.getAttribute("data-id");
+  db.ref("claims").on("value", (snap) => {
+    const claims = snap.val() || {};
+    document.querySelectorAll(".bed-option").forEach((div) => {
+      const id = div.dataset.id;
       if (claims[id]) {
-        optionDiv.classList.add("claimed");
-        optionDiv.innerHTML = `<p>Claimed by ${claims[id]}</p>`;
+        div.classList.add("claimed");
+        div.innerHTML = `<p>Claimed by ${claims[id]}</p>`;
       }
     });
   });
 }
 
-// Brewery Votes
+// Brewery Voting
 async function submitVotes() {
   const form = document.getElementById("brewery-form");
-  const selected = Array.from(
-    form.querySelectorAll('input[type="checkbox"]:checked')
-  ).map((cb) => cb.value);
-
-  if (selected.length > 0) {
-    const votesRef = ref(db, 'breweryVotes');
-    const snapshot = await get(votesRef);
-    let votes = snapshot.val() || {};
-    selected.forEach((brew) => {
-      votes[brew] = (votes[brew] || 0) + 1;
-    });
-    await set(votesRef, votes);
-    form.reset();
-  }
+  const selected = Array.from(form.querySelectorAll("input:checked")).map(cb => cb.value);
+  const snap = await db.ref("breweryVotes").get();
+  const votes = snap.val() || {};
+  selected.forEach(b => votes[b] = (votes[b] || 0) + 1);
+  await db.ref("breweryVotes").set(votes);
+  form.reset();
 }
 
 function loadVotes() {
@@ -90,31 +89,19 @@ function loadVotes() {
 }
 
 function displayVotes() {
-  const resultsDiv = document.getElementById("vote-results");
-  if (!resultsDiv) return; // Skip if not on page
-  const votesRef = ref(db, 'breweryVotes');
-  onValue(votesRef, (snapshot) => {
-    const votes = snapshot.val() || {};
-    let html = "<h3>Current Votes:</h3><ul>";
-    Object.keys(votes)
-      .sort((a, b) => votes[b] - votes[a])
-      .forEach((brew) => {
-        html += `<li>${brew}: ${votes[brew]} votes</li>`;
-      });
-    html += "</ul>";
-    resultsDiv.innerHTML = html;
+  const container = document.getElementById("vote-results");
+  if (!container) return;
+  db.ref("breweryVotes").on("value", snap => {
+    const votes = snap.val() || {};
+    container.innerHTML = `<h3>Current Votes:</h3><ul>${Object.entries(votes).sort((a, b) => b[1] - a[1]).map(([k, v]) => `<li>${k}: ${v} votes</li>`).join("")}</ul>`;
   });
 }
 
 // Interactive Map
 function initMap() {
-  const map = L.map("map").setView([35.5956, -82.5519], 15); // Center on downtown Asheville
+  const map = L.map("map").setView([35.5956, -82.5519], 15);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(map);
 
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    attribution: "© OpenStreetMap contributors",
-  }).addTo(map);
-
-  // Brewery locations (approx lat/long from maps)
   const breweries = [
     { name: "Wicked Weed Brewing", lat: 35.5933, lng: -82.5506 },
     { name: "Hi-Wire Brewing", lat: 35.5905, lng: -82.5538 },
@@ -125,312 +112,165 @@ function initMap() {
     { name: "Thirsty Monk Brewery", lat: 35.5947, lng: -82.551 },
     { name: "Asheville Brewing Company", lat: 35.5908, lng: -82.5549 },
     { name: "Twin Leaf Brewery", lat: 35.5892, lng: -82.5547 },
-    { name: "Highland Brewing Downtown", lat: 35.5951, lng: -82.552 },
+    { name: "Highland Brewing Downtown", lat: 35.5951, lng: -82.552 }
   ];
 
-  breweries.forEach((brew) => {
-    L.marker([brew.lat, brew.lng]).addTo(map).bindPopup(brew.name);
-  });
+  breweries.forEach(b => L.marker([b.lat, b.lng]).addTo(map).bindPopup(b.name));
 
-  // Parking example (Pack Square Garage)
-  L.marker([35.5948, -82.5512], {
-    icon: L.icon({
-      iconUrl:
-        "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png",
-      iconSize: [25, 41],
-    }),
-  })
-    .addTo(map)
-    .bindPopup("Pack Square Parking Garage (Start/End Point)");
+  L.marker([35.5948, -82.5512]).addTo(map).bindPopup("Pack Square Garage (Start/End)");
 }
 
-// Plan Route
 function planRoute() {
-  const votesRef = ref(db, 'breweryVotes');
-  get(votesRef).then((snapshot) => {
-    const votes = snapshot.val() || {};
-    const selected = Object.keys(votes).sort((a, b) => votes[b] - votes[a]); // Sort by votes descending
-    if (selected.length === 0) return alert("No votes yet!");
-
-    // Approx order from parking (manual sort for walking route)
+  db.ref("breweryVotes").get().then(snap => {
+    const votes = snap.val() || {};
     const order = [
-      "One World Brewing",
-      "Thirsty Monk Brewery",
-      "Highland Brewing Downtown",
-      "Wicked Weed Brewing",
-      "Asheville Brewing Company",
-      "Hi-Wire Brewing",
-      "Green Man Brewery",
-      "Twin Leaf Brewery",
-      "Burial Beer Co.",
-      "Catawba Brewing Company",
+      "One World Brewing", "Thirsty Monk Brewery", "Highland Brewing Downtown",
+      "Wicked Weed Brewing", "Asheville Brewing Company", "Hi-Wire Brewing",
+      "Green Man Brewery", "Twin Leaf Brewery", "Burial Beer Co.", "Catawba Brewing Company"
     ];
-    const sortedSelected = order.filter((name) => selected.includes(name));
-
-    // Google Maps link (start/end at parking, waypoints for breweries)
-    const parking = "Pack+Square+Garage,Asheville,NC";
-    const waypoints = sortedSelected
-      .map((name) => encodeURIComponent(name + ",Asheville,NC"))
-      .join("|");
-    const url = `https://www.google.com/maps/dir/?api=1&origin=${parking}&destination=${parking}&waypoints=${waypoints}&travelmode=walking`;
+    const selected = Object.entries(votes).sort((a, b) => b[1] - a[1]).map(([k]) => k);
+    const route = order.filter(b => selected.includes(b));
+    const url = `https://www.google.com/maps/dir/?api=1&origin=Pack+Square+Garage,Asheville,NC&destination=Pack+Square+Garage,Asheville,NC&waypoints=${route.map(r => encodeURIComponent(`${r}, Asheville, NC`)).join("|")}&travelmode=walking`;
     window.open(url, "_blank");
-  }).catch((error) => {
-    console.error("Error planning route:", error);
   });
 }
 
 // Shopping List
 async function addItem() {
   const input = document.getElementById("new-item");
-  if (input && input.value) {
-    const li = document.createElement("li");
-    li.textContent = input.value;
-    document.getElementById("shopping-list").appendChild(li);
-
-    // Save to Firebase
-    const shoppingRef = ref(db, 'shopping');
-    const snapshot = await get(shoppingRef);
-    let shopping = snapshot.val() || [];
-    shopping.push(input.value);
-    await set(shoppingRef, shopping);
-
-    input.value = "";
-  }
+  if (!input.value) return;
+  const snap = await db.ref("shopping").get();
+  const items = snap.val() || [];
+  items.push(input.value);
+  await db.ref("shopping").set(items);
+  input.value = "";
 }
 
 function loadShopping() {
-  const list = document.getElementById("shopping-list");
-  if (list) {
-    const shoppingRef = ref(db, 'shopping');
-    onValue(shoppingRef, (snapshot) => {
-      const shopping = snapshot.val() || [];
-      list.innerHTML = ""; // Clear and reload
-      shopping.forEach((item) => {
-        const li = document.createElement("li");
-        li.textContent = item;
-        list.appendChild(li);
-      });
+  const ul = document.getElementById("shopping-list");
+  if (!ul) return;
+  db.ref("shopping").on("value", snap => {
+    ul.innerHTML = "";
+    (snap.val() || []).forEach(item => {
+      const li = document.createElement("li");
+      li.textContent = item;
+      ul.appendChild(li);
     });
-  }
+  });
 }
 
-// Golf Suggestions
+// Golf
 async function addGolf() {
   const input = document.getElementById("new-golf");
-  if (input && input.value) {
-    const li = document.createElement("li");
-    li.textContent = input.value;
-    document.getElementById("golf-list").appendChild(li);
-
-    // Save to Firebase
-    const golfRef = ref(db, 'golf');
-    const snapshot = await get(golfRef);
-    let golf = snapshot.val() || [];
-    golf.push(input.value);
-    await set(golfRef, golf);
-
-    input.value = "";
-  }
+  if (!input.value) return;
+  const snap = await db.ref("golf").get();
+  const list = snap.val() || [];
+  list.push(input.value);
+  await db.ref("golf").set(list);
+  input.value = "";
 }
 
 function loadGolf() {
-  const list = document.getElementById("golf-list");
-  if (list) {
-    const golfRef = ref(db, 'golf');
-    onValue(golfRef, (snapshot) => {
-      const golf = snapshot.val() || [];
-      list.innerHTML = ""; // Clear and reload
-      golf.forEach((item) => {
-        const li = document.createElement("li");
-        li.textContent = item;
-        list.appendChild(li);
-      });
+  const ul = document.getElementById("golf-list");
+  if (!ul) return;
+  db.ref("golf").on("value", snap => {
+    ul.innerHTML = "";
+    (snap.val() || []).forEach(item => {
+      const li = document.createElement("li");
+      li.textContent = item;
+      ul.appendChild(li);
     });
-  }
+  });
 }
 
-// Countdown Timer
-function updateCountdown() {
-  const targetDate = new Date("2025-09-12T10:30:00"); // Start of the trip
-  const now = new Date();
-  const diff = targetDate - now;
-  const timer = document.getElementById("countdown-timer");
-  if (timer) {
-    if (diff > 0) {
-      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-      const hours = Math.floor(
-        (diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
-      );
-      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-      timer.textContent = `${days}d ${hours}h ${minutes}m ${seconds}s`;
-    } else {
-      timer.textContent = "Party Time!";
-    }
-  }
-}
-
-// Golf Votes
 async function submitGolfVotes() {
   const form = document.getElementById("golf-form");
-  const selected = Array.from(
-    form.querySelectorAll('input[type="checkbox"]:checked')
-  ).map((cb) => cb.value);
-
-  if (selected.length > 0) {
-    const votesRef = ref(db, 'golfVotes');
-    const snapshot = await get(votesRef);
-    let votes = snapshot.val() || {};
-    selected.forEach((course) => {
-      votes[course] = (votes[course] || 0) + 1;
-    });
-    await set(votesRef, votes);
-    form.reset();
-  }
+  const selected = Array.from(form.querySelectorAll("input:checked")).map(cb => cb.value);
+  const snap = await db.ref("golfVotes").get();
+  const votes = snap.val() || {};
+  selected.forEach(v => votes[v] = (votes[v] || 0) + 1);
+  await db.ref("golfVotes").set(votes);
+  form.reset();
 }
 
 function loadGolfVotes() {
-  displayGolfVotes();
-}
-
-function displayGolfVotes() {
-  const resultsDiv = document.getElementById("golf-vote-results");
-  if (!resultsDiv) return;
-  const votesRef = ref(db, 'golfVotes');
-  onValue(votesRef, (snapshot) => {
-    const votes = snapshot.val() || {};
-    let html = "<h3>Current Golf Votes:</h3><ul>";
-    Object.keys(votes)
-      .sort((a, b) => votes[b] - votes[a])
-      .forEach((course) => {
-        html += `<li>${course}: ${votes[course]} votes</li>`;
-      });
-    html += "</ul>";
-    resultsDiv.innerHTML = html;
+  const container = document.getElementById("golf-vote-results");
+  if (!container) return;
+  db.ref("golfVotes").on("value", snap => {
+    const votes = snap.val() || {};
+    container.innerHTML = `<h3>Current Golf Votes:</h3><ul>${Object.entries(votes).sort((a, b) => b[1] - a[1]).map(([k, v]) => `<li>${k}: ${v} votes</li>`).join("")}</ul>`;
   });
 }
 
-// Cigars Preference
+// Cigars
 async function submitCigars() {
   const form = document.getElementById("cigars-form");
-  const choice = form.querySelector('input[name="cigars"]:checked').value;
+  const choice = form.querySelector("input[name='cigars']:checked")?.value;
   const name = document.getElementById("cigars-name").value.trim();
-  let count = "";
+  const count = choice === "yes" ? document.getElementById("cigars-count").value : "";
 
-  if (choice === "yes") {
-    count = document.getElementById("cigars-count").value;
-  }
+  if (!name) return alert("Please enter your name!");
 
-  if (name) {
-    const prefsRef = ref(db, 'cigarsPrefs');
-    const snapshot = await get(prefsRef);
-    let prefs = snapshot.val() || [];
-    prefs.push({ name, choice, count });
-    await set(prefsRef, prefs);
-    form.reset();
-    document.getElementById("cigars-count").disabled = true; // Reset disable
-  } else {
-    alert("Please enter your name!");
-  }
+  const snap = await db.ref("cigarsPrefs").get();
+  const prefs = snap.val() || [];
+  prefs.push({ name, choice, count });
+  await db.ref("cigarsPrefs").set(prefs);
+  form.reset();
 }
 
 function displayCigars() {
-  const list = document.getElementById("cigars-list");
-  if (!list) return;
-  const prefsRef = ref(db, 'cigarsPrefs');
-  onValue(prefsRef, (snapshot) => {
-    const prefs = snapshot.val() || [];
-    list.innerHTML = "";
-    prefs.forEach((pref) => {
+  const ul = document.getElementById("cigars-list");
+  if (!ul) return;
+  db.ref("cigarsPrefs").on("value", snap => {
+    ul.innerHTML = "";
+    (snap.val() || []).forEach(p => {
       const li = document.createElement("li");
-      li.textContent = `${pref.name}: ${
-        pref.choice === "yes" ? `Yes, ${pref.count} cigars` : "No thanks"
-      }`;
-      list.appendChild(li);
+      li.textContent = `${p.name}: ${p.choice === "yes" ? `Yes, ${p.count} cigars` : "No thanks"}`;
+      ul.appendChild(li);
     });
   });
 }
 
-// Enable/disable count select based on radio
-document.addEventListener("DOMContentLoaded", () => {
-  const yesRadio = document.querySelector('input[value="yes"]');
-  const countSelect = document.getElementById("cigars-count");
-  if (yesRadio && countSelect) {
-    yesRadio.addEventListener("change", () => {
-      countSelect.disabled = !yesRadio.checked;
-    });
-  }
-  displayCigars(); // Load on page load
-});
-
-// Other Activities Votes
-async function submitOtherVotes() {
-  const form = document.getElementById("other-activities-form");
-  const selected = Array.from(
-    form.querySelectorAll('input[type="checkbox"]:checked')
-  ).map((cb) => cb.value);
-
-  if (selected.length > 0) {
-    const votesRef = ref(db, 'otherVotes');
-    const snapshot = await get(votesRef);
-    let votes = snapshot.val() || {};
-    selected.forEach((act) => {
-      votes[act] = (votes[act] || 0) + 1;
-    });
-    await set(votesRef, votes);
-    form.reset();
-  }
-}
-
-function displayOtherVotes() {
-  const resultsDiv = document.getElementById("other-vote-results");
-  if (!resultsDiv) return;
-  const votesRef = ref(db, 'otherVotes');
-  onValue(votesRef, (snapshot) => {
-    const votes = snapshot.val() || {};
-    let html = "<h3>Current Votes:</h3><ul>";
-    Object.keys(votes)
-      .sort((a, b) => votes[b] - votes[a])
-      .forEach((act) => {
-        html += `<li>${act}: ${votes[act]} votes</li>`;
-      });
-    html += "</ul>";
-    resultsDiv.innerHTML = html;
-  });
-}
-
-// Other Activities Suggestions
+// Other Activities
 async function addActivity() {
   const input = document.getElementById("new-activity");
-  if (input && input.value) {
-    const li = document.createElement("li");
-    li.textContent = input.value;
-    document.getElementById("activity-list").appendChild(li);
-
-    // Save to Firebase
-    const activitiesRef = ref(db, 'otherActivities');
-    const snapshot = await get(activitiesRef);
-    let activities = snapshot.val() || [];
-    activities.push(input.value);
-    await set(activitiesRef, activities);
-
-    input.value = "";
-  }
+  if (!input.value) return;
+  const snap = await db.ref("otherActivities").get();
+  const acts = snap.val() || [];
+  acts.push(input.value);
+  await db.ref("otherActivities").set(acts);
+  input.value = "";
 }
 
 function loadOtherActivities() {
-  const list = document.getElementById("activity-list");
-  if (list) {
-    const activitiesRef = ref(db, 'otherActivities');
-    onValue(activitiesRef, (snapshot) => {
-      const activities = snapshot.val() || [];
-      list.innerHTML = ""; // Clear and reload
-      activities.forEach((item) => {
-        const li = document.createElement("li");
-        li.textContent = item;
-        list.appendChild(li);
-      });
+  const ul = document.getElementById("activity-list");
+  if (!ul) return;
+  db.ref("otherActivities").on("value", snap => {
+    ul.innerHTML = "";
+    (snap.val() || []).forEach(item => {
+      const li = document.createElement("li");
+      li.textContent = item;
+      ul.appendChild(li);
     });
-  }
-  displayOtherVotes(); // Load votes too
+  });
+  displayOtherVotes();
+}
+
+async function submitOtherVotes() {
+  const form = document.getElementById("other-activities-form");
+  const selected = Array.from(form.querySelectorAll("input:checked")).map(cb => cb.value);
+  const snap = await db.ref("otherVotes").get();
+  const votes = snap.val() || {};
+  selected.forEach(v => votes[v] = (votes[v] || 0) + 1);
+  await db.ref("otherVotes").set(votes);
+  form.reset();
+}
+
+function displayOtherVotes() {
+  const div = document.getElementById("other-vote-results");
+  if (!div) return;
+  db.ref("otherVotes").on("value", snap => {
+    const votes = snap.val() || {};
+    div.innerHTML = `<h3>Current Votes:</h3><ul>${Object.entries(votes).sort((a, b) => b[1] - a[1]).map(([k, v]) => `<li>${k}: ${v} votes</li>`).join("")}</ul>`;
+  });
 }
