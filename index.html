@@ -1,21 +1,40 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Bachelor Party Weekend - Asheville, NC</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" href="favicon.ico" type="image/x-icon" />
+  
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+
+  <!-- Firebase Initialization -->
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBGJUmD9rYtKNnUKGXasJRs57UyrHVq-6Q",
+      authDomain: "bachelor-party-mk.firebaseapp.com",
+      databaseURL: "https://bachelor-party-mk-default-rtdb.firebaseio.com",
+      projectId: "bachelor-party-mk",
+      storageBucket: "bachelor-party-mk.appspot.com",
+      messagingSenderId: "588727020923",
+      appId: "1:588727020923:web:d742c916c707ee101d21de",
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+  </script>
 </head>
 
 <body>
   <div class="slideshow">
-    <!-- Add your image paths here; upload to images/ folder -->
-    <div class="slide" style="background-image: url(&quot;images/background1.jpg&quot;)"></div>
-    <div class="slide" style="background-image: url(&quot;images/background2.jpg&quot;)"></div>
-    <div class="slide" style="background-image: url(&quot;images/background3.jpg&quot;)"></div>
-    <div class="slide" style="background-image: url(&quot;images/background4.jpg&quot;)"></div>
-    <!-- Add more slides if wanted -->
+    <div class="slide" style="background-image: url('images/background1.jpg')"></div>
+    <div class="slide" style="background-image: url('images/background2.jpg')"></div>
+    <div class="slide" style="background-image: url('images/background3.jpg')"></div>
+    <div class="slide" style="background-image: url('images/background4.jpg')"></div>
   </div>
+
   <div class="content">
     <nav>
       <ul>
@@ -29,35 +48,21 @@
 
     <h1>Bachelor Party Weekend: Asheville, NC (September 12-14, 2025)</h1>
 
-    <!-- Countdown -->
     <section id="countdown">
       <h2>Countdown to the Party!</h2>
       <p id="countdown-timer" class="synthwave">Loading...</p>
     </section>
 
-    <!-- Itinerary -->
     <section id="itinerary">
       <h2>Itinerary</h2>
       <ul>
-        <li>
-          Friday, September 12: Meet at Matt's apartment between 10:00-11:00
-          AM. Park wherever you want. We will carpool (3 cars maximum). We
-          will stop to pick up food, drinks, and supplies on the way. Airbnb
-          check-in is 4:00 PM. The first night will be grilling, drinking, and
-          settling in.
-        </li>
-        <li>
-          Saturday, September 13: Brewery hopping, golf, activities; whatever
-          fun stuff we want to do out in town!
-        </li>
-        <li>
-          Sunday, September 14: Breakfast, optional morning activities,
-          departure.
-        </li>
+        <li>Friday, September 12: Meet at Matt's apartment between 10:00–11:00 AM. Park wherever you want. We’ll carpool (3 cars max). Stop for supplies en route. Airbnb check-in is 4 PM. First night = grilling, drinks, settling in.</li>
+        <li>Saturday, September 13: Brewery hopping, golf, whatever fun stuff we want to do in town!</li>
+        <li>Sunday, September 14: Breakfast, optional morning activities, then departure.</li>
       </ul>
     </section>
 
-    <!-- Meet the Guys -->
+<!-- Meet the Guys -->
     <section id="meet-guys">
       <h2>Meet the Guys</h2>
       <div class="guys-grid">
@@ -140,78 +145,33 @@
     <!-- Getting There -->
     <section id="directions">
       <h2>Getting There</h2>
-      <p>Address: 125 Watch Knob Lane, Swannanoa, NC 28778</p>
-      <p>
-        <strong>Important Note:</strong> You will likely lose GPS and cell
-        service near the house. Write down your door code on paper and follow
-        these directions carefully!
-      </p>
+      <p><strong>Address:</strong> 125 Watch Knob Lane, Swannanoa, NC 28778</p>
+      <p><strong>Important:</strong> GPS and cell service may drop. Follow printed directions!</p>
 
       <h3>Directions from Asheville (West)</h3>
       <ul>
         <li>Take Highway 40 East</li>
-        <li>Exit 55 towards US-70</li>
-        <li>Left after you exit towards US-70</li>
-        <li>Right on US-70 (1.7 miles)</li>
-        <li>Left at the gas station onto Warren Wilson Rd (2.8 miles)</li>
-        <li>Sharp Left onto Bee Tree Road (2.3 miles)</li>
-        <li>Right onto Watch Knob Lane</li>
-        <li>
-          You will see a rustic cabin on your right. After the cabin, bear
-          right to stay on Watch Knob Lane. Continue up the gravel road for
-          another half a mile.
-        </li>
-        <li>
-          <strong>Best advice for the steep gravel road:</strong> Keep your
-          car moving slowly. If you stop on a steep part, you may have to back
-          down and try again.
-        </li>
-        <li>
-          You will pass 2 other homes on your left before you come to a GIANT
-          Rock. Continue past the BIG rock and PRIVATE DRIVE sign to the top.
-        </li>
-        <li>
-          You may park 2-3 cars by the Rapunzel House and 2-3 cars in the
-          driveway leading to the Tree House. If you come to any gates, you
-          are at the wrong house.
-        </li>
-        <li>Enter the front door code to enter! Welcome!!!!</li>
+        <li>Exit 55 to US-70</li>
+        <li>Left after exit, then Right on US-70 (1.7 mi)</li>
+        <li>Left at gas station onto Warren Wilson Rd (2.8 mi)</li>
+        <li>Sharp Left onto Bee Tree Road (2.3 mi)</li>
+        <li>Right onto Watch Knob Lane and continue uphill 0.5 mi</li>
+        <li>Look for the BIG rock, stay right, and you're there!</li>
       </ul>
 
       <h3>Directions from the East</h3>
       <ul>
-        <li>Take 40 West</li>
-        <li>Exit 59 towards Swannanoa</li>
-        <li>Right onto Patton Cove Road</li>
-        <li>Right onto US-70 East</li>
-        <li>Left onto Whitson Ave</li>
-        <li>Left onto OLD US Hwy 70</li>
-        <li>Right onto Bee Tree Rd (1.5 miles)</li>
-        <li>Slight Right to stay on Bee Tree (2.3 miles)</li>
-        <li>Right onto Watch Knob Lane</li>
-        <li>
-          You will see a rustic cabin on your right. After the cabin, bear
-          right to stay on Watch Knob Lane. Continue up the gravel road for
-          another half a mile.
-        </li>
-        <li>
-          <strong>Best advice for the steep gravel road:</strong> Keep your
-          car moving slow and steady. You will make it! If you stop on a steep
-          part, you may have to back down and try again :)
-        </li>
-        <li>
-          You will pass 2 other homes on your left before you come to a GIANT
-          Rock. Continue past the Big rock and PRIVATE DRIVE sign to the top.
-        </li>
-        <li>
-          You may park 2-3 cars by the Rapunzel House and 2-3 cars in the
-          driveway leading to the Tree House. If you come to any gates, you
-          are at the wrong house.
-        </li>
-        <li>Enter the front door code to enter! Welcome!!!!</li>
+        <li>Take Highway 40 West</li>
+        <li>Exit 59 to Swannanoa</li>
+        <li>Right on Patton Cove Rd, then Right on US-70 East</li>
+        <li>Left onto Whitson Ave → Left onto Old US Hwy 70</li>
+        <li>Right onto Bee Tree Rd, slight right to stay on it (2.3 mi)</li>
+        <li>Right onto Watch Knob Lane. Follow signs to the top!</li>
       </ul>
     </section>
   </div>
-</body>
 
+  <!-- JavaScript -->
+  <script src="script.js"></script>
+</body>
 </html>
