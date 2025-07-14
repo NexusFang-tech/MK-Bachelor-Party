@@ -22,7 +22,6 @@
       appId: "1:588727020923:web:d742c916c707ee101d21de"
     };
     firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
   </script>
 </head>
 
@@ -43,11 +42,21 @@
 
     <form id="bedroom-form">
       <div id="bedroom-list">
-        <!-- Dynamically populated by script.js -->
+        <!-- Bedrooms dynamically rendered by script.js -->
       </div>
     </form>
   </div>
 
-  <script src="script.js"></script>
+  <!-- Load your logic -->
+  <script type="module" src="script.js"></script>
+
+  <!-- Manually call loadClaims after DOM loads -->
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      if (window.loadClaims) {
+        window.loadClaims();
+      }
+    });
+  </script>
 </body>
 </html>
