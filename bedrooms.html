@@ -9,22 +9,7 @@
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
-
-  <!-- Firebase Initialization -->
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyBGJUmD9rYtKNnUKGXasJRs57UyrHVq-6Q",
-      authDomain: "bachelor-party-mk.firebaseapp.com",
-      databaseURL: "https://bachelor-party-mk-default-rtdb.firebaseio.com",
-      projectId: "bachelor-party-mk",
-      storageBucket: "bachelor-party-mk.appspot.com",
-      messagingSenderId: "588727020923",
-      appId: "1:588727020923:web:d742c916c707ee101d21de"
-    };
-    firebase.initializeApp(firebaseConfig);
-  </script>
 </head>
-
 <body>
   <div class="slideshow">
     <div class="slide" style="background-image: url('images/background1.jpg');"></div>
@@ -44,7 +29,6 @@
       </ul>
     </nav>
 
-    <!-- Bedrooms -->
     <section id="bedrooms">
       <h2>There are 2 houses, 10 beds and 8 bedrooms; take your pick!</h2>
 
@@ -54,8 +38,7 @@
           <img src="images/house1-bedroom3.jpg" alt="House 1 Bedroom 1" />
           <p>Bedroom 1: Loft space with twin bed</p>
           <div class="bed-option" data-id="house1-bedroom1-twin">
-            <p class="bed-label">Twin Bed</p>
-            <span class="claimed-by"></span>
+            <p>Twin Bed</p>
             <button onclick="claimBed(this)">Claim</button>
           </div>
         </div>
@@ -64,13 +47,11 @@
           <img src="images/house1-bedroom2.jpg" alt="House 1 Bedroom 2" />
           <p>Bedroom 2: Double bed and twin bed</p>
           <div class="bed-option" data-id="house1-bedroom2-double">
-            <p class="bed-label">Double Bed</p>
-            <span class="claimed-by"></span>
+            <p>Double Bed</p>
             <button onclick="claimBed(this)">Claim</button>
           </div>
           <div class="bed-option" data-id="house1-bedroom2-twin">
-            <p class="bed-label">Twin Bed</p>
-            <span class="claimed-by"></span>
+            <p>Twin Bed</p>
             <button onclick="claimBed(this)">Claim</button>
           </div>
         </div>
@@ -79,8 +60,7 @@
           <img src="images/house1-bedroom1.jpg" alt="House 1 Bedroom 3" />
           <p>Bedroom 3: Queen bed with high ceilings and views</p>
           <div class="bed-option" data-id="house1-bedroom3-queen">
-            <p class="bed-label">Queen Bed</p>
-            <span class="claimed-by"></span>
+            <p>Queen Bed</p>
             <button onclick="claimBed(this)">Claim</button>
           </div>
         </div>
@@ -89,8 +69,7 @@
           <img src="images/house1-bedroom4.jpg" alt="House 1 Bedroom 4" />
           <p>Bedroom 4: Basement-level with queen bed and private bath</p>
           <div class="bed-option" data-id="house1-bedroom4-queen">
-            <p class="bed-label">Queen Bed</p>
-            <span class="claimed-by"></span>
+            <p>Queen Bed</p>
             <button onclick="claimBed(this)">Claim</button>
           </div>
         </div>
@@ -102,8 +81,7 @@
           <img src="images/house2-bedroom1.jpg" alt="House 2 Bedroom 1" />
           <p>Bedroom 1: Queen bed with private bath</p>
           <div class="bed-option" data-id="house2-bedroom1-queen">
-            <p class="bed-label">Queen Bed</p>
-            <span class="claimed-by"></span>
+            <p>Queen Bed</p>
             <button onclick="claimBed(this)">Claim</button>
           </div>
         </div>
@@ -112,8 +90,7 @@
           <img src="images/house2-bedroom2.jpg" alt="House 2 Bedroom 2" />
           <p>Bedroom 2: Queen bed with 20 foot ceilings</p>
           <div class="bed-option" data-id="house2-bedroom2-queen">
-            <p class="bed-label">Queen Bed</p>
-            <span class="claimed-by"></span>
+            <p>Queen Bed</p>
             <button onclick="claimBed(this)">Claim</button>
           </div>
         </div>
@@ -122,13 +99,11 @@
           <img src="images/house2-bedroom3.jpg" alt="House 2 Bedroom 3" />
           <p>Bedroom 3: 2 twin beds</p>
           <div class="bed-option" data-id="house2-bedroom3-twin1">
-            <p class="bed-label">Twin Bed 1</p>
-            <span class="claimed-by"></span>
+            <p>Twin Bed 1</p>
             <button onclick="claimBed(this)">Claim</button>
           </div>
           <div class="bed-option" data-id="house2-bedroom3-twin2">
-            <p class="bed-label">Twin Bed 2</p>
-            <span class="claimed-by"></span>
+            <p>Twin Bed 2</p>
             <button onclick="claimBed(this)">Claim</button>
           </div>
         </div>
@@ -137,8 +112,7 @@
           <img src="images/house2-bedroom4.jpg" alt="House 2 Bedroom 4" />
           <p>Bedroom 4: Twin bed in a loft above front door</p>
           <div class="bed-option" data-id="house2-bedroom4-twin">
-            <p class="bed-label">Twin Bed</p>
-            <span class="claimed-by"></span>
+            <p>Twin Bed</p>
             <button onclick="claimBed(this)">Claim</button>
           </div>
         </div>
@@ -146,7 +120,6 @@
     </section>
   </div>
 
-  <!-- Master script -->
   <script src="script.js"></script>
 </body>
 </html>
